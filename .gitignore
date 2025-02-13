@@ -1,0 +1,7 @@
+node_modules
+ssh-key.txt
+ssh-key.txt.pub
+.idea
+.vscode
+writable/session
+vendor

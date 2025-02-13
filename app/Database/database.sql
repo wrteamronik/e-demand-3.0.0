@@ -1,0 +1,5 @@
+
+CREATE TABLE `cash_collection` (`id` int(11) NOT NULL AUTO_INCREMENT,`user_id` int(11) NOT NULL,`message` text NOT NULL,`commison` int(11) NOT NULL,`status` text NOT NULL,`partner_id` int(11) NOT NULL,`date` date NOT NULL,`order_id` int(11) DEFAULT NULL,PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=8 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+CREATE TABLE `settlement_history` ( `id` int(11) NOT NULL AUTO_INCREMENT, `provider_id` int(11) NOT NULL,  `message` text NOT NULL, `date` date NOT NULL, `amount` text NOT NULL, `status` text NOT NULL, PRIMARY KEY (`id`)) ENGINE=InnoDB AUTO_INCREMENT=10 DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+ALTER TABLE `users` ADD `payable_commision` TEXT NULL DEFAULT 0 AFTER `updated_at`;
+ALTER TABLE `orders` ADD `payment_status` TEXT NOT NULL DEFAULT '\'0\'' AFTER `updated_at`;

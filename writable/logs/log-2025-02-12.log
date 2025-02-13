@@ -1,0 +1,8 @@
+CRITICAL - 2025-02-12 09:31:26 --> Creation of dynamic property IonAuth\Libraries\IonAuth::$session is deprecated
+#0 /var/www/html/e-demand/vendor/benedmunds/codeigniter-ion-auth/Libraries/IonAuth.php(66): CodeIgniter\Debug\Exceptions->errorHandler()
+#1 /var/www/html/e-demand/app/Controllers/BaseController.php(96): IonAuth\Libraries\IonAuth->__construct()
+#2 /var/www/html/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(812): App\Controllers\BaseController->initController()
+#3 /var/www/html/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(412): CodeIgniter\CodeIgniter->createController()
+#4 /var/www/html/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest()
+#5 /var/www/html/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#6 {main}

@@ -50,21 +50,21 @@ $permissions = get_permission($user1[0]['id']);
             <div class="container-fluid card p-3">
                 <div class="row">
                     <div class="col-lg">
-                        <label class="form-label fw-bold mb-0" for="english_about_us"><?= labels('english_about_us', 'About Us in English') ?></label>
+                        <label class="form-label mb-0" for="english_about_us"><?= labels('english_about_us', 'About Us in English') ?></label>
                         <textarea rows=50 class='form-control h-50 summernotes'
                             name="english_about_us" id="english_about_us"><?= isset($english_about_us) ? $english_about_us : 'Enter about us in English.' ?></textarea>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-lg ">
-                        <label class="form-label fw-bold mb-0" for="russian_about_us"><?= labels('russian_about_us', 'About Us in Russian') ?></label>
+                        <label class="form-label mb-0" for="russian_about_us"><?= labels('russian_about_us', 'About Us in Russian') ?></label>
                         <textarea rows=50 class='form-control h-50 summernotes'
                             name="russian_about_us" id="russian_about_us"><?= isset($russian_about_us) ? $russian_about_us : 'Enter about us in Russian.' ?></textarea>
                     </div>
                 </div>
                 <div class="row mt-3">
                     <div class="col-lg">
-                        <label class="form-label fw-bold mb-0" for="estonian_about_us"><?= labels('russian_about_us', 'About Us in Russian') ?></label>
+                        <label class="form-label mb-0" for="estonian_about_us"><?= labels('russian_about_us', 'About Us in Russian') ?></label>
                         <textarea rows=50 class='form-control h-50 summernotes'
                             name="estonian_about_us" id="estonian_about_us"><?= isset($estonian_about_us) ? $estonian_about_us : 'Enter about us in Estonian.' ?></textarea>
                     </div>

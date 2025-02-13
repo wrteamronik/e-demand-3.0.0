@@ -51,3 +51,25 @@ CRITICAL - 2025-02-13 08:28:18 --> Undefined array key "terms_conditions"
 #7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
 #8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
 #9 {main}
+CRITICAL - 2025-02-13 08:57:40 --> Undefined array key "russian_customer_privacy_policy"
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/customer_app_privacy_policy.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(545): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->customer_privacy_policy_page()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-02-13 09:00:12 --> Undefined array key "russian_customer_privacy_policy"
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/customer_app_privacy_policy.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(545): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->customer_privacy_policy_page()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}

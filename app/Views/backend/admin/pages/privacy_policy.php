@@ -61,13 +61,23 @@ $permissions = get_permission($user1[0]['id']);
             <div class="container-fluid card p-3">
                 <div class="row">
                     <div class="col-lg">
-                        <form method="get">
-                            <textarea rows=50 class='form-control h-50 summernotes' name="privacy_policy"><?= isset($privacy_policy) ? $privacy_policy : 'Enter Privacy Policy.' ?></textarea>
-                        </form>
+                        <label class="form-label mb-0" for="english_privacy_policy"><?= labels('english_privacy_policy', 'Privacy Policy in English') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' name="english_privacy_policy" id="english_privacy_policy"><?= isset($english_privacy_policy) ? $english_privacy_policy : 'Enter Privacy Policy in English.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                        <label class="form-label mb-0" for="russian_privacy_policy"><?= labels('russian_privacy_policy', 'Privacy Policy in Russian') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' name="russian_privacy_policy" id="russian_privacy_policy"><?= isset($russian_privacy_policy) ? $russian_privacy_policy : 'Enter Privacy Policy in Russian.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                        <label class="form-label mb-0" for="estonian_privacy_policy"><?= labels('estonian_privacy_policy', 'Privacy Policy in Estonian') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' name="estonian_privacy_policy" id="estonian_privacy_policy"><?= isset($estonian_privacy_policy) ? $estonian_privacy_policy : 'Enter Privacy Policy in Estonian.' ?></textarea>
                     </div>
                 </div>
                 <div class="row mt-2">
-
                     <div class="col-md-6 mt-3 mb-4">
                         <a href="<?= base_url('admin/settings/partner_privacy_policy_page'); ?>" class="btn btn-primary"><i class="fa fa-eye"></i> <?= labels('preview', 'Preview') ?></a>
                     </div>

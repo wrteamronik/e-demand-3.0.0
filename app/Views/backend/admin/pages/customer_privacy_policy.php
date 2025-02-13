@@ -45,9 +45,20 @@ $permissions = get_permission($user1[0]['id']);
             <div class="container-fluid card p-3">
                 <div class="row">
                     <div class="col-lg">
-                        <form method="get">
-                            <textarea rows=50 class='form-control h-50 summernotes' name="customer_privacy_policy"><?= isset($customer_privacy_policy) ? $customer_privacy_policy : 'Enter Privacy Policy.' ?></textarea>
-                        </form>
+                            <label class="form-label mb-0" for="english_customer_privacy_policy"><?= labels('english_privacy_policy', 'Privacy Policy in English') ?></label>
+                            <textarea rows=50 class='form-control h-50 summernotes' name="english_customer_privacy_policy" id="english_customer_privacy_policy"><?= isset($english_customer_privacy_policy) ? $english_customer_privacy_policy : 'Enter Privacy Policy in English.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                            <label class="form-label mb-0" for="russian_customer_privacy_policy"><?= labels('russian_privacy_policy', 'Privacy Policy in Russian') ?></label>
+                            <textarea rows=50 class='form-control h-50 summernotes' name="russian_customer_privacy_policy" id="russian_customer_privacy_policy"><?= isset($russian_customer_privacy_policy) ? $russian_customer_privacy_policy : 'Enter Privacy Policy in Russian.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                            <label class="form-label mb-0" for="estonian_customer_privacy_policy"><?= labels('estonian_privacy_policy', 'Privacy Policy in Estonian') ?></label>
+                            <textarea rows=50 class='form-control h-50 summernotes' name="estonian_customer_privacy_policy" id="estonian_customer_privacy_policy"><?= isset($estonian_customer_privacy_policy) ? $estonian_customer_privacy_policy : 'Enter Privacy Policy in Estonian.' ?></textarea>
                     </div>
                 </div>
                 <div class="row mt-2">

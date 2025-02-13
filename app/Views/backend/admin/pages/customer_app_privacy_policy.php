@@ -8,7 +8,15 @@
 </head>
 <body>
     <?php
-    echo $privacy_policy['customer_privacy_policy'];
+    echo $privacy_policy['english_customer_privacy_policy'];
+    echo "<br>";
+    echo "<br>";
+    echo $privacy_policy['russian_customer_privacy_policy'];
+    echo "<br>";
+    echo "<br>";
+    echo $privacy_policy['estonian_customer_privacy_policy'];
+    echo "<br>";
+    echo "<br>";
     ?>
 </body>
 </html>

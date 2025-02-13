@@ -8,7 +8,13 @@
 </head>
 <body>
     <?php
-    print_R($privacy_policy['privacy_policy']);
+    print_r($privacy_policy['english_privacy_policy']);
+    echo "<br>";
+    echo "<br>";
+    print_r($privacy_policy['russian_privacy_policy']);
+    echo "<br>";
+    echo "<br>";
+    print_r($privacy_policy['estonian_privacy_policy']);
     ?>
 </body>
 </html>

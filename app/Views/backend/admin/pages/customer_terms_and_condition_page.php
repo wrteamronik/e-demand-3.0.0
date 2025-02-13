@@ -11,7 +11,13 @@
 <body>
     <?php
 
-    echo $customer_terms_conditions['customer_terms_conditions'];
+    echo html_entity_decode($customer_terms_conditions['english_customer_terms_and_conditions']);
+    echo "<br>";
+
+    echo html_entity_decode($customer_terms_conditions['russian_customer_terms_and_conditions']);
+    echo "<br>";
+
+    echo html_entity_decode($customer_terms_conditions['estonian_customer_terms_and_conditions']);
 
     ?>
 </body>

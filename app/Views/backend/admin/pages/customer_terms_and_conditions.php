@@ -45,7 +45,20 @@ $permissions = get_permission($user1[0]['id']);
             <div class="container-fluid card p-3">
                 <div class="row">
                     <div class="col-lg">
-                        <textarea rows=50 class='form-control h-50 summernotes' name="customer_terms_conditions"><?= isset($customer_terms_conditions) ? $customer_terms_conditions : 'Enter Terms & Conditions.' ?></textarea>
+                        <label class="form-label mb-0" for="english_customer_terms_and_conditions"><?= labels('english_t&c', 'Terms and Conditions in English') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' id="english_customer_terms_and_conditions" name="english_customer_terms_and_conditions"><?= isset($english_customer_terms_and_conditions) ? $english_customer_terms_and_conditions : 'Enter Terms & Conditions in English.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                        <label class="form-label mb-0" for="russian_customer_terms_and_conditions"><?= labels('russian_t&c', 'Terms and Conditions in Russian') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' id="russian_customer_terms_and_conditions" name="russian_customer_terms_and_conditions"><?= isset($russian_customer_terms_and_conditions) ? $russian_customer_terms_and_conditions : 'Enter Terms & Conditions in Russian.' ?></textarea>
+                    </div>
+                </div>
+                <div class="row mt-3">
+                    <div class="col-lg">
+                        <label class="form-label mb-0" for="estonian_customer_terms_and_conditions"><?= labels('estonian_t&c', 'Terms and Conditions in Estonian') ?></label>
+                        <textarea rows=50 class='form-control h-50 summernotes' id="estonian_customer_terms_and_conditions" name="estonian_customer_terms_and_conditions"><?= isset($estonian_customer_terms_and_conditions) ? $estonian_customer_terms_and_conditions : 'Enter Terms & Conditions in Estonian.' ?></textarea>
                     </div>
                 </div>
                 <div class="row mt-2">

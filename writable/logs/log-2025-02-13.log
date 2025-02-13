@@ -1,0 +1,53 @@
+CRITICAL - 2025-02-13 08:03:41 --> Undefined array key "english_customer_terms_conditions"
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/customer_terms_and_condition_page.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(546): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->customer_tearms_and_condition()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-02-13 08:19:10 --> Invalid file: backend/admin/pages/provider_terms_and_condition_page.php
+#0 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(198): CodeIgniter\Exceptions\FrameworkException::forInvalidFile('backend/admin/p...')
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#2 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(555): view('backend/admin/p...', Array)
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->provider_terms_and_condition()
+#4 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#6 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#7 {main}
+CRITICAL - 2025-02-13 08:22:03 --> Undefined variable $terms_conditions
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/provider_terms_and_condition_page.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined varia...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(555): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->provider_terms_and_condition()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-02-13 08:27:11 --> Undefined variable $privacy_policy
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/provider_terms_and_condition_page.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined varia...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(568): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->provider_terms_and_condition()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}
+CRITICAL - 2025-02-13 08:28:18 --> Undefined array key "terms_conditions"
+#0 /opt/lampp/htdocs/e-demand/app/Views/backend/admin/pages/provider_terms_and_condition_page.php(14): CodeIgniter\Debug\Exceptions->errorHandler(2, 'Undefined array...', '/opt/lampp/htdo...', 14)
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(210): include('/opt/lampp/htdo...')
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/View/View.php(213): CodeIgniter\View\View->CodeIgniter\View\{closure}()
+#3 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Common.php(1089): CodeIgniter\View\View->render('backend/admin/p...', Array, true)
+#4 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Settings.php(568): view('backend/admin/p...', Array)
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Settings->provider_terms_and_condition()
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Settings))
+#7 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#8 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#9 {main}

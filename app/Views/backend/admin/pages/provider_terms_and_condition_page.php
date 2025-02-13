@@ -11,8 +11,13 @@
 <body>
     <?php
 
-    echo $privacy_policy['privacy_policy'];
+    echo html_entity_decode($terms_conditions['english_terms_and_conditions']);
+    echo "<br>";
 
+    echo html_entity_decode($terms_conditions['russian_terms_and_conditions']);
+    echo "<br>";
+
+    echo html_entity_decode($terms_conditions['estonian_terms_and_conditions']);
     ?>
 </body>
 

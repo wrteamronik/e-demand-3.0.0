@@ -2,13 +2,19 @@
 
 namespace App\Controllers\admin;
 
+use App\Jobs\Email;
+use App\Jobs\NumberLoggerJob;
 use App\Models\Country_code_model;
 use App\Models\Email_template_model;
-use App\Models\Service_ratings_model;
+
+use CodeIgniter\Queue\Queue;
 
 class Settings extends Admin
 {
     private $db, $builder;
+    protected $superadmin;
+    protected $validation;
+
     public function __construct()
     {
         parent::__construct();
@@ -17,6 +23,7 @@ class Settings extends Admin
         $this->builder = $this->db->table('settings');
         $this->superadmin = $this->session->get('email');
         helper('ResponceServices');
+        helper('events');
     }
     public function __destruct()
     {
@@ -33,12 +40,16 @@ class Settings extends Admin
     }
     public function general_settings()
     {
+
+
         try {
             helper('form');
             if (!$this->isLoggedIn || !$this->userIsAdmin) {
                 return redirect('admin/login');
             }
             if ($this->request->getPost('update')) {
+
+
                 if ($this->superadmin == "superadmin@gmail.com") {
                     defined('ALLOW_MODIFICATION') && ALLOW_MODIFICATION == 1;
                 } else {
@@ -51,144 +62,67 @@ class Settings extends Admin
                     }
                 }
                 $updatedData = $this->request->getPost();
-                $flag = 0;
-                $login_image = false;
-                $favicon = false;
-                $halfLogo = false;
-                $logo = false;
-                $partner_favicon = false;
-                $partner_halfLogo = false;
-                $partner_logo = false;
-                $files = array();
                 $data = get_settings('general_settings', true);
-                if (!empty($_FILES['favicon'])) {
-                    if ($_FILES['favicon']['name'] != "") {
-                        if (!valid_image('favicon')) {
-                            $flag = 1;
+
+                $disk = fetch_current_file_manager();
+
+                $files = [
+                    'favicon' => ['file' => $this->request->getFile('favicon'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload favicon', 'folder' => 'site', 'old_file' => $data['favicon'] ?? null, 'disk' => $disk],
+                    'half_logo' => ['file' => $this->request->getFile('half_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload half_logo', 'folder' => 'site', 'old_file' => $data['half_logo'] ?? null, 'disk' => $disk],
+                    'logo' => ['file' => $this->request->getFile('logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload logo', 'folder' => 'site', 'old_file' => $data['logo'] ?? null, 'disk' => $disk],
+                    'partner_favicon' => ['file' => $this->request->getFile('partner_favicon'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_favicon', 'folder' => 'site', 'old_file' => $data['partner_favicon'] ?? null, 'disk' => $disk],
+                    'partner_half_logo' => ['file' => $this->request->getFile('partner_half_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_half_logo', 'folder' => 'site', 'old_file' => $data['partner_half_logo'] ?? null, 'disk' => $disk],
+                    'partner_logo' => ['file' => $this->request->getFile('partner_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_logo', 'folder' => 'site', 'old_file' => $data['partner_logo'] ?? null, 'disk' => $disk],
+                    'login_image' => ['file' => $this->request->getFile('login_image'), 'path' => 'public/frontend/retro/', 'error' => 'Failed to upload login_image', 'folder' => 'site', 'old_file' => $data['login_image'] ?? null, 'disk' => $disk],
+                ];
+
+                $uploadedFiles = [];
+                foreach ($files as $key => $config) {
+
+                    if (!empty($_FILES[$key]) && isset($_FILES[$key])) {
+                        $file = $config['file'];
+                        if ($file && $file->isValid()) {
+                            if (!empty($config['old_file'])) {
+                                delete_file_based_on_server($config['folder'], $config['old_file'], $config['disk']);
+                            }
+                            $result = upload_file($config['file'], $config['path'], $config['error'], $config['folder'],'yes');
+
+                            if ($result['error'] == false) {
+
+                                if($key=="login_image"){
+
+                                  
+                                    $uploadedFiles[$key] = [
+                                        'url' => "Login_BG.jpg",
+                                        'disk' => $result['disk']
+                                    ];
+                                }else{
+
+                                        $uploadedFiles[$key] = [
+                                            'url' => $result['file_name'],
+                                            'disk' => $result['disk']
+                                        ];
+                                    }
+                            } else {
+                                return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                            }
                         } else {
-                            $favicon = true;
+                            $uploadedFiles[$key] = [
+                                'url' => $config['old_file'],
+                                'disk' => $config['disk']
+                            ];
                         }
+                    } else {
+                        $uploadedFiles[$key] = [
+                            'url' => $config['old_file'],
+                            'disk' => $config['disk']
+                        ];
                     }
                 }
-                if (!empty($_FILES['halfLogo'])) {
-                    if ($_FILES['halfLogo']['name'] != "") {
-                        if (!valid_image('halfLogo')) {
-                            $flag = 1;
-                        } else {
-                            $halfLogo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['logo'])) {
-                    if ($_FILES['logo']['name'] != "") {
-                        if (!valid_image('logo')) {
-                            $flag = 1;
-                        } else {
-                            $logo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['logo'])) {
-                    if ($_FILES['partner_favicon']['name'] != "") {
-                        if (!valid_image('partner_favicon')) {
-                            $flag = 1;
-                        } else {
-                            $partner_favicon = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['partner_halfLogo'])) {
-                    if ($_FILES['partner_halfLogo']['name'] != "") {
-                        if (!valid_image('partner_halfLogo')) {
-                            $flag = 1;
-                        } else {
-                            $partner_halfLogo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['partner_logo'])) {
-                    if ($_FILES['partner_logo']['name'] != "") {
-                        if (!valid_image('partner_logo')) {
-                            $flag = 1;
-                        } else {
-                            $partner_logo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['login_image'])) {
-                    if ($_FILES['login_image']['name'] != "") {
-                        if (!valid_image('login_image')) {
-                            $flag = 1;
-                        } else {
-                            $login_image = true;
-                        }
-                    }
-                }
-                if ($login_image) {
-                    $file = $this->request->getFile('login_image');
-                    $path = FCPATH . 'public/frontend/retro/';
-                    $newName = "Login_BG.jpg";
-                    if (file_exists($path . $newName)) {
-                        unlink($path . $newName);
-                    }
-                    $file->move($path, $newName);
-                    $updatedData['login_image'] = $newName;
-                } else {
-                    $updatedData['login_image'] = isset($data['login_image']) ? $data['login_image'] : "";
-                }
-                if ($favicon) {
-                    $file = $this->request->getFile('favicon');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['favicon']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['favicon'] = $newName;
-                } else {
-                    $updatedData['favicon'] = isset($data['favicon']) ? $data['favicon'] : "";
-                }
-                if ($logo) {
-                    $file = $this->request->getFile('logo');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['logo']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['logo'] = $newName;
-                } else {
-                    $updatedData['logo'] = isset($data['logo']) ? $data['logo'] : "";
-                }
-                if ($halfLogo) {
-                    $file = $this->request->getFile('halfLogo');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['halfLogo']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['half_logo'] = $newName;
-                } else {
-                    $updatedData['half_logo'] = isset($data['half_logo']) ? $data['half_logo'] : "";
-                }
-                if ($partner_favicon) {
-                    $file = $this->request->getFile('partner_favicon');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['partner_favicon']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['partner_favicon'] = $newName;
-                } else {
-                    $updatedData['partner_favicon'] = isset($data['partner_favicon']) ? $data['partner_favicon'] : "";
-                }
-                if ($partner_logo) {
-                    $file = $this->request->getFile('partner_logo');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['partner_logo']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['partner_logo'] = $newName;
-                } else {
-                    $updatedData['partner_logo'] = isset($data['partner_logo']) ? $data['partner_logo'] : "";
-                }
-                if ($partner_halfLogo) {
-                    $file = $this->request->getFile('partner_halfLogo');
-                    $newName = $file->getRandomName();
-                    $tempPath = $_FILES['partner_halfLogo']['tmp_name'];
-                    compressImage($tempPath, 'public/uploads/site/' . $newName, 70);
-                    $updatedData['partner_half_logo'] = $newName;
-                } else {
-                    $updatedData['partner_half_logo'] = isset($data['partner_half_logo']) ? $data['partner_half_logo'] : '';
+
+                // die;
+                foreach ($uploadedFiles as $key => $value) {
+                    $updatedData[$key] = isset($value['url']) ? $value['url'] : (isset($data[$key]) ? $data[$key] : '');
                 }
                 unset($updatedData['update']);
                 unset($updatedData[csrf_token()]);
@@ -216,53 +150,80 @@ class Settings extends Admin
                 if (!empty($this->request->getPost('allow_post_booking_chat'))) {
                     $updatedData['allow_post_booking_chat'] = (!empty($this->request->getPost('allow_post_booking_chat'))) ? $this->request->getPost('allow_post_booking_chat') : (isset($data['allow_post_booking_chat']) ? ($data['allow_post_booking_chat']) : "");
                 }
-                $keys = [
-                    'customer_current_version_android_app',
-                    'customer_current_version_ios_app',
-                    'customer_compulsary_update_force_update',
-                    'provider_current_version_android_app',
-                    'provider_current_version_ios_app',
-                    'provider_compulsary_update_force_update',
-                    'customer_app_maintenance_schedule_date',
-                    'message_for_customer_application',
-                    'customer_app_maintenance_mode',
-                    'provider_app_maintenance_schedule_date',
-                    'message_for_provider_application',
-                    'provider_app_maintenance_mode',
-                    'provider_location_in_provider_details',
-                    'company_title',
-                    'support_name',
-                    'support_email',
-                    'phone',
-                    'system_timezone_gmt',
-                    'system_timezone',
-                    'primary_color',
-                    'secondary_color',
-                    'primary_shadow',
-                    'address',
-                    'short_description',
-                    'copyright_details',
-                    'booking_auto_cancle_duration',
-                    'customer_playstore_url',
-                    'customer_appstore_url',
-                    'provider_playstore_url',
-                    'provider_appstore_url',
-                    'maxFilesOrImagesInOneMessage',
-                    'maxFileSizeInMBCanBeSent',
-                    'maxCharactersInATextMessage',
-                    'android_google_interstitial_id',
-                    'android_google_banner_id',
-                    'ios_google_interstitial_id',
-                    'ios_google_banner_id',
-                    "android_google_ads_status",
-                    "ios_google_ads_status",
-                    'authentication_mode',
-                    'company_map_location',
-                    'support_hours',
-                ];
+                $keys = ['customer_current_version_ios_app', 'customer_compulsary_update_force_update', 'provider_current_version_android_app', 'provider_current_version_ios_app', 'provider_compulsary_update_force_update', 'customer_app_maintenance_schedule_date', 'message_for_customer_application', 'customer_app_maintenance_mode', 'provider_app_maintenance_schedule_date', 'message_for_provider_application', 'provider_app_maintenance_mode', 'provider_location_in_provider_details', 'company_title', 'support_name', 'support_email', 'phone', 'system_timezone_gmt', 'system_timezone', 'primary_color', 'secondary_color', 'primary_shadow', 'address', 'short_description', 'copyright_details', 'booking_auto_cancle_duration', 'customer_playstore_url', 'customer_appstore_url', 'provider_playstore_url', 'provider_appstore_url', 'maxFilesOrImagesInOneMessage', 'maxFileSizeInMBCanBeSent', 'maxCharactersInATextMessage', 'android_google_interstitial_id', 'android_google_banner_id', 'ios_google_interstitial_id', 'ios_google_banner_id', "android_google_ads_status", "ios_google_ads_status", 'authentication_mode', 'company_map_location', 'support_hours', 'file_manager', 'aws_access_key_id', 'aws_secret_access_key', 'aws_secret_access_key', 'aws_default_region', 'aws_bucket', 'aws_url'];
                 foreach ($keys as $key) {
                     $updatedData[$key] = (!empty($this->request->getPost($key))) ? $this->request->getPost($key) : (isset($data[$key]) ? ($data[$key]) : "");
                 }
+                $updatedData['customer_current_version_android_app'] = (!empty($this->request->getPost('customer_current_version_android_app'))) ? $this->request->getPost('customer_current_version_android_app') : (isset($data['customer_current_version_android_app']) ? $data['customer_current_version_android_app'] : "");
+                $updatedData['customer_current_version_ios_app'] = (!empty($this->request->getPost('customer_current_version_ios_app'))) ? $this->request->getPost('customer_current_version_ios_app') : (isset($data['customer_current_version_ios_app']) ? $data['customer_current_version_ios_app'] : "");
+                $updatedData['provider_current_version_android_app'] = (!empty($this->request->getPost('provider_current_version_android_app'))) ? $this->request->getPost('provider_current_version_android_app') : (isset($data['provider_current_version_android_app']) ? $data['provider_current_version_android_app'] : "");
+                $updatedData['provider_current_version_ios_app'] = (!empty($this->request->getPost('provider_current_version_ios_app'))) ? $this->request->getPost('provider_current_version_ios_app') : (isset($data['provider_current_version_ios_app']) ? $data['provider_current_version_ios_app'] : "");
+                $updatedData['customer_app_maintenance_schedule_date'] = (!empty($this->request->getPost('customer_app_maintenance_schedule_date'))) ? $this->request->getPost('customer_app_maintenance_schedule_date') : (isset($data['customer_app_maintenance_schedule_date']) ? $data['customer_app_maintenance_schedule_date'] : "");
+                $updatedData['message_for_customer_application'] = (!empty($this->request->getPost('message_for_customer_application'))) ? $this->request->getPost('message_for_customer_application') : (isset($data['message_for_customer_application']) ? $data['message_for_customer_application'] : "");
+                $updatedData['provider_app_maintenance_schedule_date'] = (!empty($this->request->getPost('provider_app_maintenance_schedule_date'))) ? ($this->request->getPost('provider_app_maintenance_schedule_date')) : (isset($data['provider_app_maintenance_schedule_date']) ? $data['provider_app_maintenance_schedule_date'] : "");
+                $updatedData['message_for_provider_application'] = (!empty($this->request->getPost('message_for_provider_application'))) ? $this->request->getPost('message_for_provider_application') : (isset($data['message_for_provider_application']) ? $data['message_for_provider_application'] : "");
+                if ($this->request->getPost('customer_compulsary_update_force_update') == 0) {
+                    $updatedData['customer_compulsary_update_force_update'] = "0";
+                } elseif (!empty($this->request->getPost('customer_compulsary_update_force_update'))) {
+                    $updatedData['customer_compulsary_update_force_update'] = $this->request->getPost('customer_compulsary_update_force_update');
+                } else {
+                    $updatedData['customer_compulsary_update_force_update'] = $data['customer_compulsary_update_force_update'];
+                }
+                if ($this->request->getPost('provider_compulsary_update_force_update') == 0) {
+                    $updatedData['provider_compulsary_update_force_update'] = "0";
+                } elseif (!empty($this->request->getPost('provider_compulsary_update_force_update'))) {
+                    $updatedData['provider_compulsary_update_force_update'] = $this->request->getPost('provider_compulsary_update_force_update');
+                } else {
+                    $updatedData['provider_compulsary_update_force_update'] = $data['provider_compulsary_update_force_update'];
+                }
+                if ($this->request->getPost('provider_location_in_provider_details') == 0) {
+                    $updatedData['provider_location_in_provider_details'] = "0";
+                } elseif (!empty($this->request->getPost('provider_location_in_provider_details'))) {
+                    $updatedData['provider_location_in_provider_details'] = $this->request->getPost('provider_location_in_provider_details');
+                } else {
+                    $updatedData['provider_location_in_provider_details'] = $data['provider_location_in_provider_details'];
+                }
+                if ($this->request->getPost('provider_app_maintenance_mode') == 0) {
+                    $updatedData['provider_app_maintenance_mode'] = "0";
+                } elseif (!empty($this->request->getPost('provider_app_maintenance_mode'))) {
+                    $updatedData['provider_app_maintenance_mode'] = $this->request->getPost('provider_app_maintenance_mode');
+                } else {
+                    $updatedData['provider_app_maintenance_mode'] = $data['provider_app_maintenance_mode'];
+                }
+                if ($this->request->getPost('customer_app_maintenance_mode') == 0) {
+                    $updatedData['customer_app_maintenance_mode'] = "0";
+                } elseif (!empty($this->request->getPost('customer_app_maintenance_mode'))) {
+                    $updatedData['customer_app_maintenance_mode'] = $this->request->getPost('customer_app_maintenance_mode');
+                } else {
+                    $updatedData['customer_app_maintenance_mode'] = $data['customer_app_maintenance_mode'];
+                }
+                if ($this->request->getPost('android_google_ads_status') == 0) {
+                    $updatedData['android_google_ads_status'] = "0";
+                } elseif (!empty($this->request->getPost('android_google_ads_status'))) {
+                    $updatedData['android_google_ads_status'] = $this->request->getPost('android_google_ads_status');
+                } else {
+                    $updatedData['android_google_ads_status'] = $data['android_google_ads_status'];
+                }
+                if ($this->request->getPost('ios_google_ads_status') == 0) {
+                    $updatedData['ios_google_ads_status'] = "0";
+                } elseif (!empty($this->request->getPost('ios_google_ads_status'))) {
+                    $updatedData['ios_google_ads_status'] = $this->request->getPost('ios_google_ads_status');
+                } else {
+                    $updatedData['ios_google_ads_status'] = $data['ios_google_ads_status'];
+                }
+
+                $updatedData['currency'] = (!empty($this->request->getPost('currency'))) ? $this->request->getPost('currency') : (isset($data['currency']) ? $data['currency'] : "");
+                $updatedData['country_currency_code'] = (!empty($this->request->getPost('country_currency_code'))) ? $this->request->getPost('country_currency_code') : (isset($data['country_currency_code']) ? $data['country_currency_code'] : "");
+                if ($this->request->getPost('decimal_point') == 0) {
+                    $updatedData['decimal_point'] = "0";
+                } elseif (!empty($this->request->getPost('decimal_point'))) {
+                    $updatedData['decimal_point'] = $this->request->getPost('decimal_point');
+                } else {
+                    $updatedData['decimal_point'] = $data['decimal_point'];
+                }
+
+
+
                 if ($this->request->getPost('image_compression_preference') == 0) {
                     $updatedData['image_compression_preference'] = "0";
                     $updatedData['image_compression_quality'] = "0";
@@ -276,18 +237,34 @@ class Settings extends Admin
                         $updatedData['system_timezone_gmt'] = '+' . trim($updatedData['system_timezone_gmt']);
                     }
                 }
+
+                if (isset($updatedData['aws_url'])) {
+                    $updatedData['aws_url'] = rtrim($updatedData['aws_url'], '/');
+                }
+
+
                 $json_string = json_encode($updatedData);
-                if ($flag == 0) {
-                    if ($this->update_setting('general_settings', $json_string)) {
-                        $_SESSION['toastMessage']  = 'Unable to update the settings.';
-                        $_SESSION['toastMessageType']  = 'error';
-                    } else {
-                        $_SESSION['toastMessage'] = 'Settings has been successfuly updated.';
-                        $_SESSION['toastMessageType']  = 'success';
-                    }
-                } else {
-                    $_SESSION['toastMessage'] = 'please insert valid image.';
+
+
+
+                $file_transfer_process = $_POST['file_transfer_process'];
+                $file_manager = $_POST['file_manager'];
+
+                if ($file_transfer_process == 1) {
+                    $queue = service('queue');
+                    $jobId = $queue->push('filemanagerchanges', 'fileManagerChangesJob', ['file_manager' => $file_manager]);
+                }
+                update_details(['value' => $file_manager], ['variable' => 'storage_disk'], 'settings');
+
+
+                if ($this->update_setting('general_settings', $json_string)) {
+
+
+                    $_SESSION['toastMessage']  = 'Unable to update the settings.';
                     $_SESSION['toastMessageType']  = 'error';
+                } else {
+                    $_SESSION['toastMessage'] = 'Settings has been successfuly updated.';
+                    $_SESSION['toastMessageType']  = 'success';
                 }
                 $this->session->markAsFlashdata('toastMessage');
                 $this->session->markAsFlashdata('toastMessageType');
@@ -296,25 +273,82 @@ class Settings extends Admin
             $this->builder->select('value');
             $this->builder->where('variable', 'general_settings');
             $query = $this->builder->get()->getResultArray();
+
             if (count($query) == 1) {
                 $settings = $query[0]['value'];
                 $settings = json_decode($settings, true);
+
+                $imageSettings = ['half_logo', 'partner_favicon', 'partner_half_logo', 'partner_logo', 'login_image', 'favicon', 'logo'];
+
+                $disk = fetch_current_file_manager();
+
+                foreach ($imageSettings as $key) {
+
+                 
+                    if (isset($settings[$key])) {
+                  
+                        if (isset($disk)) {
+                            switch ($disk) {
+                                case 'local_server':
+                                    if( $key=='login_image'){
+                                   
+                                        $settings[$key] = base_url('public/frontend/retro/') . $settings[$key];
+
+                                    }else{
+
+                                        $settings[$key] = base_url('public/uploads/site/') . $settings[$key];
+                                    }
+                                    break;
+                                case 'aws_s3':
+                                    $settings[$key] = fetch_cloud_front_url('site', $settings[$key]);
+                                    break;
+                                default:
+                                    $settings[$key] = "";
+                            }
+                        } else {
+                            $settings[$key] = "";
+                        }
+                    }
+                }
                 if (!empty($settings)) {
                     $this->data = array_merge($this->data, $settings);
                 }
+// die;
+
+                // public/frontend/retro
             }
             $settings['distance_unit'] = isset($settings['distance_unit']) ? $settings['distance_unit'] : 'km';
             if ($settings['distance_unit'] == "miles") {
                 $this->data['max_serviceable_distance'] = round($settings['max_serviceable_distance'] * 0.621371);
             };
+
             $this->data['timezones'] = get_timezone_array();
             setPageInfo($this->data, 'General Settings | Admin Panel', 'general_settings');
             return view('backend/admin/template', $this->data);
         } catch (\Throwable $th) {
+           
             log_the_responce($th, date("Y-m-d H:i:s") . '--> app/Controllers/admin/Settings.php - general_settings()');
             return ErrorResponse("Something Went Wrong", true, [], [], 200, csrf_token(), csrf_hash());
         }
     }
+
+
+    public function startQueueWorker()
+    {
+        $output = null;
+        $retval = null;
+
+        // Run the queue worker command and capture the output
+        exec('/opt/lampp/bin/php /opt/lampp/htdocs/edemand/index.php queue:work 2>&1', $output, $retval);
+
+        // Log output and return code
+        log_message('error', 'Queue Worker Output: ' . implode("\n", $output));
+        log_message('error', 'Queue Worker Return Code: ' . $retval);
+    }
+
+
+
+
     public function email_settings()
     {
         try {
@@ -335,31 +369,10 @@ class Settings extends Admin
                 }
                 $this->validation->setRules(
                     [
-                        'smtpHost' => [
-                            "rules" => 'required',
-                            "errors" => [
-                                "required" => "Please enter SMTP Host"
-                            ]
-                        ],
-                        'smtpUsername' => [
-                            "rules" => 'required',
-                            "errors" => [
-                                "required" => "Please enter SMTP Username"
-                            ]
-                        ],
-                        'smtpPassword' => [
-                            "rules" => 'required',
-                            "errors" => [
-                                "required" => "Please enter SMTP Password"
-                            ]
-                        ],
-                        'smtpPort' => [
-                            "rules" => 'required|numeric',
-                            "errors" => [
-                                "required" => "Please enter SMTP Port Number",
-                                "numeric" => "Please enter numeric value for SMTP Port Number"
-                            ]
-                        ],
+                        'smtpHost' => ["rules" => 'required', "errors" => ["required" => "Please enter SMTP Host"]],
+                        'smtpUsername' => ["rules" => 'required', "errors" => ["required" => "Please enter SMTP Username"]],
+                        'smtpPassword' => ["rules" => 'required', "errors" => ["required" => "Please enter SMTP Password"]],
+                        'smtpPort' => ["rules" => 'required|numeric', "errors" => ["required" => "Please enter SMTP Port Number",    "numeric" => "Please enter numeric value for SMTP Port Number"]],
                     ],
                 );
                 if (!$this->validation->withRequest($this->request)->run()) {
@@ -434,19 +447,15 @@ class Settings extends Admin
                 }
                 unset($updatedData['update']);
                 unset($updatedData[csrf_token()]);
-
                 if (isset($updatedData['paypal_website_url'])) {
-                    $updatedData['paypal_website_url']= rtrim($updatedData['paypal_website_url'], '/');
+                    $updatedData['paypal_website_url'] = rtrim($updatedData['paypal_website_url'], '/');
                 }
                 if (isset($updatedData['flutterwave_website_url'])) {
-                    $updatedData['flutterwave_website_url']=rtrim($updatedData['flutterwave_website_url'], '/');
+                    $updatedData['flutterwave_website_url'] = rtrim($updatedData['flutterwave_website_url'], '/');
                 }
                 if (isset($updatedData['flutterwave_webhook_secret_key'])) {
-
                     updateEnv('FLUTTERWAVE_SECRET_KEY', $updatedData['flutterwave_webhook_secret_key']);
                 }
-
-
                 $json_string = json_encode($updatedData);
                 if ($this->update_setting('payment_gateways_settings', $json_string)) {
                     $_SESSION['toastMessage']  = 'Unable to update the payment gateways settings.';
@@ -477,7 +486,6 @@ class Settings extends Admin
             return ErrorResponse("Something Went Wrong", true, [], [], 200, csrf_token(), csrf_hash());
         }
     }
-
     public function privacy_policy()
     {
         try {
@@ -548,10 +556,15 @@ class Settings extends Admin
     public function provider_terms_and_condition()
     {
         $settings = get_settings('general_settings', true);
-        $this->data['title'] = 'Provider Privacy Policy  | ' . $settings['company_title'];
-        $this->data['meta_description'] = 'Provider Privacy Policy  | ' . $settings['company_title'];
-        $this->data['privacy_policy'] = get_settings('privacy_policy', true);
-        $this->data['settings'] =  $settings;
+        $companyTitle = $settings['company_title'];
+
+        $this->data = [
+            'title'             => "Provider Privacy Policy  | $companyTitle",
+            'meta_description'  => "Provider Privacy Policy  | $companyTitle",
+            'terms_conditions'  => get_settings('terms_conditions', true),
+            'settings'          => $settings
+        ];
+
         return view('backend/admin/pages/provider_terms_and_condition_page', $this->data);
     }
     public function partner_privacy_policy_page()
@@ -940,6 +953,7 @@ class Settings extends Admin
             }
             return $this->db->transComplete() ? true : false;
         } catch (\Throwable $th) {
+        
             log_the_responce($th, date("Y-m-d H:i:s") . '--> app/Controllers/admin/Settings.php - update_setting()');
             return ErrorResponse("Something Went Wrong", true, [], [], 200, csrf_token(), csrf_hash());
         }
@@ -1020,129 +1034,56 @@ class Settings extends Admin
                     }
                 }
                 $updatedData = $this->request->getPost();
-                $flag = 0;
-                $favicon = false;
-                $halfLogo = false;
-                $logo = false;
-                $partner_favicon = false;
-                $partner_halfLogo = false;
-                $partner_logo = false;
-                $files = array();
+
                 $data = get_settings('general_settings', true);
-                if (!empty($_FILES['favicon'])) {
-                    if ($_FILES['favicon']['name'] != "") {
-                        if (!valid_image('favicon')) {
-                            $flag = 1;
+                $disk = fetch_current_file_manager();
+
+                $files = [
+                    'favicon' => ['file' => $this->request->getFile('favicon'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload favicon', 'folder' => 'site', 'old_file' => $data['favicon'] ?? null, 'disk' => $disk],
+                    'half_logo' => ['file' => $this->request->getFile('half_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload half_logo', 'folder' => 'site', 'old_file' => $data['half_logo'] ?? null, 'disk' => $disk],
+                    'logo' => ['file' => $this->request->getFile('logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload logo', 'folder' => 'site', 'old_file' => $data['logo'] ?? null, 'disk' => $disk],
+                    'partner_favicon' => ['file' => $this->request->getFile('partner_favicon'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_favicon', 'folder' => 'site', 'old_file' => $data['partner_favicon'] ?? null, 'disk' => $disk],
+                    'partner_half_logo' => ['file' => $this->request->getFile('partner_half_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_half_logo', 'folder' => 'site', 'old_file' => $data['partner_half_logo'] ?? null, 'disk' => $disk],
+                    'partner_logo' => ['file' => $this->request->getFile('partner_logo'), 'path' => 'public/uploads/site/', 'error' => 'Failed to upload partner_logo', 'folder' => 'site', 'old_file' => $data['partner_logo'] ?? null, 'disk' => $disk],
+                    'login_image' => ['file' => $this->request->getFile('login_image'), 'path' => 'public/frontend/retro/', 'error' => 'Failed to upload login_image', 'folder' => 'site', 'old_file' => $data['login_image'] ?? null, 'disk' => $disk],
+                ];
+                $uploadedFiles = [];
+                foreach ($files as $key => $config) {
+                    if (!empty($_FILES[$key]) && isset($_FILES[$key])) {
+                        $file = $config['file'];
+                        if ($file && $file->isValid()) {
+                            if (!empty($config['old_file'])) {
+                                delete_file_based_on_server($config['folder'], $config['old_file'], $config['disk']);
+                            }
+                            $result = upload_file($config['file'], $config['path'], $config['error'], $config['folder']);
+                            if ($result['error'] == false) {
+                                $uploadedFiles[$key] = [
+                                    'url' => $result['file_name'],
+                                    'disk' => $result['disk']
+                                ];
+                            } else {
+                                return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                            }
                         } else {
-                            $favicon = true;
+                            $uploadedFiles[$key] = [
+                                'url' => $config['old_file'],
+                                'disk' => $config['disk']
+                            ];
                         }
+                    } else {
+                        $uploadedFiles[$key] = [
+                            'url' => $config['old_file'],
+                            'disk' => $config['disk']
+                        ];
                     }
                 }
-                if (!empty($_FILES['halfLogo'])) {
-                    if ($_FILES['halfLogo']['name'] != "") {
-                        if (!valid_image('halfLogo')) {
-                            $flag = 1;
-                        } else {
-                            $halfLogo = true;
-                        }
-                    }
+                foreach ($uploadedFiles as $key => $value) {
+                    $updatedData[$key] = isset($value['url']) ? $value['url'] : (isset($data[$key]) ? $data[$key] : '');
                 }
-                if (!empty($_FILES['logo'])) {
-                    if ($_FILES['logo']['name'] != "") {
-                        if (!valid_image('logo')) {
-                            $flag = 1;
-                        } else {
-                            $logo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['logo'])) {
-                    if ($_FILES['partner_favicon']['name'] != "") {
-                        if (!valid_image('partner_favicon')) {
-                            $flag = 1;
-                        } else {
-                            $partner_favicon = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['partner_halfLogo'])) {
-                    if ($_FILES['partner_halfLogo']['name'] != "") {
-                        if (!valid_image('partner_halfLogo')) {
-                            $flag = 1;
-                        } else {
-                            $partner_halfLogo = true;
-                        }
-                    }
-                }
-                if (!empty($_FILES['partner_logo'])) {
-                    if ($_FILES['partner_logo']['name'] != "") {
-                        if (!valid_image('partner_logo')) {
-                            $flag = 1;
-                        } else {
-                            $partner_logo = true;
-                        }
-                    }
-                }
-                if ($favicon) {
-                    $file = $this->request->getFile('favicon');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['favicon'] = $newName;
-                } else {
-                    $updatedData['favicon'] = isset($data['favicon']) ? $data['favicon'] : "";
-                }
-                if ($logo) {
-                    $file = $this->request->getFile('logo');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['logo'] = $newName;
-                } else {
-                    $updatedData['logo'] = isset($data['logo']) ? $data['logo'] : "";
-                }
-                if ($halfLogo) {
-                    $file = $this->request->getFile('halfLogo');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['half_logo'] = $newName;
-                } else {
-                    $updatedData['half_logo'] = isset($data['half_logo']) ? $data['half_logo'] : "";
-                }
-                if ($partner_favicon) {
-                    $file = $this->request->getFile('partner_favicon');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['partner_favicon'] = $newName;
-                } else {
-                    $updatedData['partner_favicon'] = isset($data['partner_favicon']) ? $data['partner_favicon'] : "";
-                }
-                if ($partner_logo) {
-                    $file = $this->request->getFile('partner_logo');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['partner_logo'] = $newName;
-                } else {
-                    $updatedData['partner_logo'] = isset($data['partner_logo']) ? $data['partner_logo'] : "";
-                }
-                if ($partner_halfLogo) {
-                    $file = $this->request->getFile('partner_halfLogo');
-                    $path = FCPATH . 'public/uploads/site/';
-                    $image = $file->getName();
-                    $newName = $file->getRandomName();
-                    $file->move($path, $newName);
-                    $updatedData['partner_half_logo'] = $newName;
-                } else {
-                    $updatedData['partner_half_logo'] = isset($data['partner_half_logo']) ? $data['partner_half_logo'] : '';
-                }
+
+                // Cleanup
+                unset($updatedData['halfLogo']);
+                unset($updatedData['partner_halfLogo']);
                 unset($updatedData['update']);
                 unset($updatedData[csrf_token()]);
                 $updatedData['currency'] = (!empty($this->request->getPost('currency'))) ? $this->request->getPost('currency') : (isset($data['currency']) ? $data['currency'] : "");
@@ -1211,53 +1152,12 @@ class Settings extends Admin
                 } else {
                     $updatedData['ios_google_ads_status'] = $data['ios_google_ads_status'];
                 }
-                $keys = [
-                    'customer_current_version_android_app',
-                    'customer_current_version_ios_app',
-                    'provider_current_version_android_app',
-                    'provider_current_version_ios_app',
-                    'customer_app_maintenance_schedule_date',
-                    'message_for_customer_application',
-                    'customer_app_maintenance_mode',
-                    'provider_app_maintenance_schedule_date',
-                    'message_for_provider_application',
-                    'provider_app_maintenance_mode',
-                    'company_title',
-                    'support_name',
-                    'support_email',
-                    'phone',
-                    'system_timezone_gmt',
-                    'system_timezone',
-                    'primary_color',
-                    'secondary_color',
-                    'primary_shadow',
-                    'max_serviceable_distance',
-                    'distance_unit',
-                    'address',
-                    'short_description',
-                    'copyright_details',
-                    'booking_auto_cancle_duration',
-                    'customer_playstore_url',
-                    'customer_appstore_url',
-                    'provider_playstore_url',
-                    'provider_appstore_url',
-                    'maxFilesOrImagesInOneMessage',
-                    'maxFileSizeInMBCanBeSent',
-                    'maxCharactersInATextMessage',
-                    'android_google_interstitial_id',
-                    'android_google_banner_id',
-                    'ios_google_interstitial_id',
-                    'ios_google_banner_id',
-                    'otp_system',
-                    'authentication_mode',
-                    'company_map_location',
-                    'support_hours',
-                    'allow_pre_booking_chat',
-                    'allow_post_booking_chat'
-                ];
+                $keys = ['customer_current_version_android_app', 'customer_current_version_ios_app', 'provider_current_version_android_app', 'provider_current_version_ios_app', 'customer_app_maintenance_schedule_date', 'message_for_customer_application', 'customer_app_maintenance_mode', 'provider_app_maintenance_schedule_date', 'message_for_provider_application', 'provider_app_maintenance_mode', 'company_title', 'support_name', 'support_email', 'phone', 'system_timezone_gmt', 'system_timezone', 'primary_color', 'secondary_color', 'primary_shadow', 'max_serviceable_distance', 'distance_unit', 'address', 'short_description', 'copyright_details', 'booking_auto_cancle_duration', 'customer_playstore_url', 'customer_appstore_url', 'provider_playstore_url', 'provider_appstore_url', 'maxFilesOrImagesInOneMessage', 'maxFileSizeInMBCanBeSent', 'maxCharactersInATextMessage', 'android_google_interstitial_id', 'android_google_banner_id', 'ios_google_interstitial_id', 'ios_google_banner_id', 'otp_system', 'authentication_mode', 'company_map_location', 'support_hours', 'allow_pre_booking_chat', 'allow_post_booking_chat', 'file_manager', 'aws_access_key_id', 'aws_secret_access_key', 'aws_secret_access_key', 'aws_default_region', 'aws_bucket', 'aws_url', 'storage_disk',];
                 foreach ($keys as $key) {
                     $updatedData[$key] = (!empty($this->request->getPost($key))) ? $this->request->getPost($key) : (isset($data[$key]) ? ($data[$key]) : "");
                 }
+
+
                 if ($this->request->getPost('image_compression_preference') == 0) {
                     $updatedData['image_compression_preference'] = "0";
                     $updatedData['image_compression_quality'] = "0";
@@ -1299,6 +1199,7 @@ class Settings extends Admin
             setPageInfo($this->data, 'App Settings | Admin Panel', 'app');
             return view('backend/admin/template', $this->data);
         } catch (\Throwable $th) {
+         
             log_the_responce($th, date("Y-m-d H:i:s") . '--> app/Controllers/admin/Settings.php - app_settings()');
             return ErrorResponse("Something Went Wrong", true, [], [], 200, csrf_token(), csrf_hash());
         }
@@ -1342,13 +1243,9 @@ class Settings extends Admin
                     $file = $this->request->getFile('json_file');
                     $path = FCPATH . 'public/';
                     $newName = "firebase_config.json";
-
-
-                    // Check if the file exists and delete it
                     if (file_exists($path . $newName)) {
                         unlink($path . $newName);
                     }
-
                     $file->move($path, $newName);
                     $updatedData['json_file'] = $newName;
                 } else {
@@ -1404,6 +1301,10 @@ class Settings extends Admin
     }
     public function web_setting_update()
     {
+        $path = FCPATH . "/public/uploads/web_settings/";
+        if (!is_dir($path)) {
+            mkdir($path, 0775, true);
+        }
         try {
             $social_media = [];
             $updatedData['social_media'] = ($social_media);
@@ -1414,38 +1315,7 @@ class Settings extends Admin
             if ($this->isLoggedIn && $this->userIsAdmin) {
                 if ($this->request->getPost('update')) {
                     $old_settings = get_settings('web_settings', true);
-                    $old_data = [
-                        'category_section_title',
-                        'category_section_description',
-                        'rating_section_title',
-                        'rating_section_description',
-                        'faq_section_title',
-                        'faq_section_description',
-                        'landing_page_logo',
-                        'landing_page_backgroud_image',
-                        'rating_section_status',
-                        'faq_section_status',
-                        'category_section_status',
-                        'category_ids',
-                        'rating_ids',
-                        'landing_page_title',
-                        'process_flow_title',
-                        'process_flow_description',
-                        'footer_description',
-                        'step_1_title',
-                        'step_2_title',
-                        'step_3_title',
-                        'step_4_title',
-                        'step_1_description',
-                        'step_2_description',
-                        'step_3_description',
-                        'step_4_description',
-                        'step_1_image',
-                        'step_2_image',
-                        'step_3_image',
-                        'step_4_image',
-                        'process_flow_status'
-                    ];
+                    $old_data = ['category_section_title', 'category_section_description', 'rating_section_title', 'rating_section_description', 'faq_section_title', 'faq_section_description', 'landing_page_logo', 'landing_page_backgroud_image', 'rating_section_status', 'faq_section_status', 'category_section_status', 'category_ids', 'rating_ids', 'landing_page_title', 'process_flow_title', 'process_flow_description', 'footer_description', 'step_1_title', 'step_2_title', 'step_3_title', 'step_4_title', 'step_1_description', 'step_2_description', 'step_3_description', 'step_4_description', 'step_1_image', 'step_2_image', 'step_3_image', 'step_4_image', 'process_flow_status'];
                     foreach ($old_data as $key) {
                         $updatedData[$key] = (!empty($this->request->getPost($key))) ? $this->request->getPost($key) : (isset($old_settings[$key]) ? ($old_settings[$key]) : "");
                     }
@@ -1461,23 +1331,54 @@ class Settings extends Admin
                         }
                     }
                     $data = get_settings('web_settings', true);
-                    $files_to_check = array(
-                        'web_logo',
-                        'web_favicon',
-                        'web_half_logo',
-                        'footer_logo',
-                    );
+                    $files_to_check = array('web_logo', 'web_favicon', 'web_half_logo', 'footer_logo');
                     $path = FCPATH . 'public/uploads/web_settings/';
                     foreach ($files_to_check as $row) {
-                        if (!empty($_FILES[$row]['name'])) {
+                        $file = $this->request->getFile($row);
+
+                        if ($file && $file->isValid()) {
+                            if (!valid_image($row)) {
+                            } else {
+                                $result = upload_file(
+                                    $file,
+                                    "public/uploads/web_settings/",
+                                    "error uploading web settings file",
+                                    'web_settings'
+                                );
+
+                                if ($result['error'] == false) {
+                                    $updatedData[$row] = $result['file_name'];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
+                            }
+                        } else {
+                            $updatedData[$row] = isset($data[$row]) ? $data[$row] : "";
+                        }
+                    }
+
+
+                    $files_to_check = array('landing_page_logo', 'landing_page_backgroud_image', 'web_logo', 'web_favicon', 'web_half_logo', 'footer_logo', 'step_1_image', 'step_2_image', 'step_3_image', 'step_4_image');
+
+                    foreach ($files_to_check as $row) {
+                        $file = $this->request->getFile($row);
+
+                        if ($file && $file->isValid()) {
                             if (!valid_image($row)) {
                                 $flag = 1;
                             } else {
-                                $file = $this->request->getFile($row);
-                                $newName = $file->getRandomName();
-                                $tempPath = $_FILES[$row]['tmp_name'];
-                                compressImage($tempPath, 'public/uploads/web_settings/' . $newName, 70);
-                                $updatedData[$row] = $newName;
+                                $result = upload_file(
+                                    $file,
+                                    "public/uploads/web_settings/",
+                                    "error uploading web settings file",
+                                    'web_settings'
+                                );
+
+                                if ($result['error'] == false) {
+                                    $updatedData[$row] = $result['file_name'];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
                             }
                         } else {
                             $updatedData[$row] = isset($data[$row]) ? $data[$row] : "";
@@ -1488,35 +1389,49 @@ class Settings extends Admin
                         $updatedSocialMedia = [];
                     }
                     $updatedData1 = [];
+                    $updatedSocialMedia = [];
+                    $request = \Config\Services::request();
+                    $updatedSocialMedia = [];
                     foreach ($_POST['social_media'] as $i => $item) {
-                        if (($item['exist_url'] == 'new') && ($item['exist_file'] == 'new')) {
-                            $path = FCPATH . 'public/uploads/web_settings/';
-                            $newName = $_FILES['social_media']['name'][$i]['file'];
-                            $fileFullPath = $path . $newName;
-                            if (move_uploaded_file($_FILES['social_media']['tmp_name'][$i]['file'], $fileFullPath)) {
-                                $updatedSocialMedia[] = [
-                                    'url' => $item['url'],
-                                    'file' => $newName
-                                ];
-                            }
-                        } else {
-                            if ($item['exist_url'] != $item['url'] || !empty($_FILES['social_media']['name'][$i]['file'])) {
-                                $updatedData1['url'] = $item['url'];
-                            } else {
-                                $updatedData1['url'] = $item['exist_url'];
-                            }
-                            if (!empty($_FILES['social_media']['name'][$i]['file'])) {
-                                $path = FCPATH . 'public/uploads/web_settings/';
-                                $newName = $_FILES['social_media']['name'][$i]['file'];
-                                $fileFullPath = $path . $newName;
-                                if ($_FILES['social_media']['name'][$i]['file'] != $item['exist_file']) {
-                                    compressImage($_FILES['social_media']['tmp_name'][$i]['file'], 'public/uploads/web_settings/' . $newName, 70);
-                                    $updatedData[$row] = $newName;
-                                    $updatedData1['file'] = $newName;
+                        $upload_path = 'public/uploads/web_settings/';
+
+                        if ($item['exist_url'] == 'new') {
+                            $file = $request->getFile("social_media.{$i}.file");
+                            if ($file && $file->isValid()) {
+                                $result = upload_file($file, $upload_path, "error creating web setting function", 'web_settings');
+                                if ($result['error'] == false) {
+                                    $updatedSocialMedia[] = [
+                                        'url' => $item['url'],
+                                        'file' => $result['file_name']
+                                    ];
                                 } else {
-                                    $updatedData1['file'] = $item['exist_file'];
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
                                 }
                             } else {
+                                $disk = fetch_current_file_manager();
+
+                                if (!empty($item['url'])) {
+                                    $updatedSocialMedia[] = [
+                                        'url' => $item['url'],
+                                        'file' => ''
+                                    ];
+                                }
+                            }
+                        } else {
+                            $updatedData1 = [
+                                'url' => ($item['exist_url'] != $item['url']) ? $item['url'] : $item['exist_url']
+                            ];
+                            $file = $request->getFile("social_media.{$i}.file");
+                            if ($file && $file->isValid()) {
+                                $result = upload_file($file, $upload_path, "error updating web setting function", 'web_settings');
+                                if ($result['error'] == false) {
+                                    $updatedData1['file'] = $result['file_name'];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
+                            } else {
+                                $disk = fetch_current_file_manager();
+
                                 $updatedData1['file'] = $item['exist_file'];
                             }
                             $updatedSocialMedia[] = $updatedData1;
@@ -1551,6 +1466,7 @@ class Settings extends Admin
                 return redirect('admin/login');
             }
         } catch (\Throwable $th) {
+      
             log_the_responce($th, date("Y-m-d H:i:s") . '--> app/Controllers/admin/Settings.php - web_setting_page()');
             return ErrorResponse("Something Went Wrong", true, [], [], 200, csrf_token(), csrf_hash());
         }
@@ -1572,18 +1488,8 @@ class Settings extends Admin
             }
             $this->validation->setRules(
                 [
-                    'name' => [
-                        "rules" => 'required',
-                        "errors" => [
-                            "required" => "Please enter name"
-                        ]
-                    ],
-                    'code' => [
-                        "rules" => 'required',
-                        "errors" => [
-                            "required" => "Please enter code"
-                        ]
-                    ],
+                    'name' => ["rules" => 'required', "errors" => ["required" => "Please enter name"]],
+                    'code' => ["rules" => 'required', "errors" => ["required" => "Please enter code"]],
                 ],
             );
             if (!$this->validation->withRequest($this->request)->run()) {
@@ -1717,18 +1623,8 @@ class Settings extends Admin
             }
             $this->validation->setRules(
                 [
-                    'name' => [
-                        "rules" => 'required',
-                        "errors" => [
-                            "required" => "Please enter name"
-                        ]
-                    ],
-                    'code' => [
-                        "rules" => 'required',
-                        "errors" => [
-                            "required" => "Please enter code"
-                        ]
-                    ],
+                    'name' => ["rules" => 'required', "errors" => ["required" => "Please enter name"]],
+                    'code' => ["rules" => 'required', "errors" => ["required" => "Please enter code"]],
                 ],
             );
             if (!$this->validation->withRequest($this->request)->run()) {
@@ -1773,8 +1669,6 @@ class Settings extends Admin
         $this->data['title'] = 'About Us | ' . $settings['company_title'];
         $this->data['meta_description'] = 'About Us | ' . $settings['company_title'];
         $this->data['about_us'] = get_settings('about_us', true);
-        $this->data['russian_about_us'] = get_settings('russian_about_us', true);
-        $this->data['estonian_about_us'] = get_settings('estonian_about_us', true);
         $this->data['settings'] =  $settings;
         return view('backend/admin/pages/about_us_preview', $this->data);
     }
@@ -1799,24 +1693,9 @@ class Settings extends Admin
     {
         try {
             $validationRules = [
-                'subject' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please enter Subject"
-                    ]
-                ],
-                'email_type' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select type"
-                    ]
-                ],
-                'template' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select Template"
-                    ]
-                ],
+                'subject' => ["rules" => 'required', "errors" => ["required" => "Please enter Subject"]],
+                'email_type' => ["rules" => 'required', "errors" => ["required" => "Please select type"]],
+                'template' => ["rules" => 'required', "errors" => ["required" => "Please select Template"]],
             ];
             if (!$this->validate($validationRules)) {
                 $errors = $this->validator->getErrors();
@@ -1899,24 +1778,9 @@ class Settings extends Admin
     {
         try {
             $validationRules = [
-                'subject' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please enter Subject"
-                    ]
-                ],
-                'email_type' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select type"
-                    ]
-                ],
-                'template' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select Template"
-                    ]
-                ],
+                'subject' => ["rules" => 'required', "errors" => ["required" => "Please enter Subject"]],
+                'email_type' => ["rules" => 'required', "errors" => ["required" => "Please select type"]],
+                'template' => ["rules" => 'required', "errors" => ["required" => "Please select Template"]],
             ];
             if (!$this->validate($validationRules)) {
                 $errors = $this->validator->getErrors();
@@ -2041,18 +1905,22 @@ class Settings extends Admin
             }
         }
         $smsgateway_data = array();
-        $smsgateway_data['twilio_endpoint'] = isset($_POST['twilio_endpoint']) ? $_POST['twilio_endpoint'] : '';
-        $smsgateway_data['sms_gateway_method'] = isset($_POST['sms_gateway_method']) ? $_POST['sms_gateway_method'] : 'POST';
-        $smsgateway_data['country_code_include'] = isset($_POST['country_code_include']) ? $_POST['country_code_include'] : '0';
-        $smsgateway_data['header_key'] = isset($_POST['header_key']) && !empty($_POST['header_key']) ? $_POST['header_key'] : '';
-        $smsgateway_data['header_value'] = isset($_POST['header_value']) && !empty($_POST['header_value']) ? $_POST['header_value'] : '';
-        $smsgateway_data['params_key'] = isset($_POST['params_key']) && !empty($_POST['params_key']) ? $_POST['params_key'] : '';
-        $smsgateway_data['params_value'] = isset($_POST['params_value']) && !empty($_POST['params_value']) ? $_POST['params_value'] : '';
-        $smsgateway_data['body_key'] = isset($_POST['body_key']) && !empty($_POST['body_key']) ? $_POST['body_key'] : '';
-        $smsgateway_data['body_value'] = isset($_POST['body_value']) && !empty($_POST['body_value']) ? $_POST['body_value'] : '';
+        $smsgateway_data['twilio']['twilio_status'] = isset($_POST['twilio_status']) ? '1' : '0';
+        $smsgateway_data['twilio']['twilio_account_sid'] = isset($_POST['twilio_account_sid']) ? $_POST['twilio_account_sid'] : '';
+        $smsgateway_data['twilio']['twilio_auth_token'] = isset($_POST['twilio_auth_token']) ? $_POST['twilio_auth_token'] : '';
+        $smsgateway_data['twilio']['twilio_from'] = isset($_POST['twilio_from']) ? $_POST['twilio_from'] : '';
+        $smsgateway_data['vonage']['vonage_status'] = isset($_POST['vonage_status']) ? '1' : '0';
+        $smsgateway_data['vonage']['vonage_api_key'] = isset($_POST['vonage_api_key']) ? $_POST['vonage_api_key'] : '';
+        $smsgateway_data['vonage']['vonage_api_secret'] = isset($_POST['vonage_api_secret']) ? $_POST['vonage_api_secret'] : '';
+        $current_sms_gateway = ''; // Default to null if none is active
+        if ($smsgateway_data['twilio']['twilio_status'] === '1') {
+            $current_sms_gateway = 'twilio';
+        } elseif ($smsgateway_data['vonage']['vonage_status'] === '1') {
+            $current_sms_gateway = 'vonage';
+        }
+        $smsgateway_data['current_sms_gateway'] = $current_sms_gateway;
         $smsgateway_data = json_encode($smsgateway_data);
         $this->update_setting('sms_gateway_setting', $smsgateway_data);
-     
         if ($this->update_setting('sms_gateway_setting', $smsgateway_data)) {
             $_SESSION['toastMessage']  = 'Unable to update the SMS Gateway settings.';
             $_SESSION['toastMessageType']  = 'error';
@@ -2068,24 +1936,9 @@ class Settings extends Admin
     {
         try {
             $validationRules = [
-                'title' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please enter Title"
-                    ]
-                ],
-                'type' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select type"
-                    ]
-                ],
-                'template' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select Template"
-                    ]
-                ],
+                'title' => ["rules" => 'required', "errors" => ["required" => "Please enter Title"]],
+                'type' => ["rules" => 'required', "errors" => ["required" => "Please select type"]],
+                'template' => ["rules" => 'required', "errors" => ["required" => "Please select Template"]],
             ];
             if (!$this->validate($validationRules)) {
                 $errors = $this->validator->getErrors();
@@ -2196,24 +2049,9 @@ class Settings extends Admin
     {
         try {
             $validationRules = [
-                'title' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please enter Title"
-                    ]
-                ],
-                'type' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select type"
-                    ]
-                ],
-                'template' => [
-                    "rules" => 'required',
-                    "errors" => [
-                        "required" => "Please select Template"
-                    ]
-                ],
+                'title' => ["rules" => 'required', "errors" => ["required" => "Please enter Title"]],
+                'type' => ["rules" => 'required', "errors" => ["required" => "Please select type"]],
+                'template' => ["rules" => 'required', "errors" => ["required" => "Please select Template"]],
             ];
             if (!$this->validate($validationRules)) {
                 $errors = $this->validator->getErrors();
@@ -2259,26 +2097,7 @@ class Settings extends Admin
             return redirect('unauthorised');
         }
         $current_settings = get_settings('notification_settings', true);
-        $notification_settings = [
-            'provider_approved',
-            'provider_disapproved',
-            'withdraw_request_approved',
-            'withdraw_request_disapproved',
-            'payment_settlement',
-            'service_approved',
-            'service_disapproved',
-            'user_account_active',
-            'user_account_deactive',
-            'provider_update_information',
-            'new_provider_registerd',
-            'withdraw_request_received',
-            'booking_status_updated',
-            'new_booking_confirmation_to_customer',
-            'new_booking_received_for_provider',
-            'withdraw_request_send',
-            'new_rating_given_by_customer',
-            'rating_request_to_customer'
-        ];
+        $notification_settings = ['provider_approved', 'provider_disapproved', 'withdraw_request_approved', 'withdraw_request_disapproved', 'payment_settlement', 'service_approved', 'service_disapproved', 'user_account_active', 'user_account_deactive', 'provider_update_information', 'new_provider_registerd', 'withdraw_request_received', 'booking_status_updated', 'new_booking_confirmation_to_customer', 'new_booking_received_for_provider', 'withdraw_request_send', 'new_rating_given_by_customer', 'rating_request_to_customer'];
         $this->data['notification_settings'] = $notification_settings;
         $this->data['current_settings'] = $current_settings; // Include current settings
         setPageInfo($this->data, 'Notification settings | Admin Panel', 'notification_settings');
@@ -2352,9 +2171,7 @@ class Settings extends Admin
                 $services_ratings[$key]['profile_image'] = base_url('public/backend/assets/profiles/' . $row['profile_image']);
             }
             $this->data['services_ratings'] = $services_ratings;
-            // echo "<pre>";
-            // print_r($this->data['services_ratings']);
-            // die;
+
             $this->data['categories_name'] = fetch_details('categories', [], ['id', 'name']);
             setPageInfo($this->data, 'Web Landing Page Settings | Admin Panel', 'web_landing_page');
             return view('backend/admin/template', $this->data);
@@ -2399,17 +2216,7 @@ class Settings extends Admin
             }
             $updatedData['rating_ids'] = isset($rating_ids) ? $rating_ids : '';
             $old_settings = get_settings('web_settings', true);
-            $old_data = [
-                'social_media',
-                'web_title',
-                'playstore_url',
-                'app_section_status',
-                'applestore_url',
-                'web_logo',
-                'web_favicon',
-                'web_half_logo',
-                'footer_logo',
-            ];
+            $old_data = ['social_media', 'web_title', 'playstore_url', 'app_section_status', 'applestore_url', 'web_logo', 'web_favicon', 'web_half_logo', 'footer_logo',];
             foreach ($old_data as $key) {
                 $updatedData[$key] = (!empty($this->request->getPost($key))) ? $this->request->getPost($key) : (isset($old_settings[$key]) ? ($old_settings[$key]) : "");
             }
@@ -2427,47 +2234,30 @@ class Settings extends Admin
                         }
                     }
                     $data = get_settings('web_settings', true);
-                    $files_to_check = array(
-                        'landing_page_logo',
-                        'landing_page_backgroud_image',
-                    );
-                    $path = FCPATH . 'public/uploads/web_settings/';
-                    foreach ($files_to_check as $row) {
-                        if (!empty($_FILES[$row]['name'])) {
-                            if (!valid_image($row)) {
-                                $flag = 1;
-                            } else {
-                                $file = $this->request->getFile($row);
-                                $newName = $file->getRandomName();
-                                $tempPath = $_FILES[$row]['tmp_name'];
-                                compressImage($tempPath, 'public/uploads/web_settings/' . $newName, 70);
-                                $updatedData[$row] = $newName;
-                            }
-                        } else {
-                            $updatedData[$row] = isset($data[$row]) ? $data[$row] : "";
-                        }
-                    }
+
+
                     $data = get_settings('web_settings', true);
-                    $files_to_check = array(
-                        'web_logo',
-                        'web_favicon',
-                        'web_half_logo',
-                        'footer_logo',
-                        'step_1_image',
-                        'step_2_image',
-                        'step_3_image',
-                        'step_4_image',
-                    );
+                    $files_to_check = array('landing_page_logo', 'landing_page_backgroud_image', 'web_logo', 'web_favicon', 'web_half_logo', 'footer_logo', 'step_1_image', 'step_2_image', 'step_3_image', 'step_4_image');
+
                     foreach ($files_to_check as $row) {
-                        if (!empty($_FILES[$row]['name'])) {
+                        $file = $this->request->getFile($row);
+
+                        if ($file && $file->isValid()) {
                             if (!valid_image($row)) {
                                 $flag = 1;
                             } else {
-                                $file = $this->request->getFile($row);
-                                $newName = $file->getRandomName();
-                                $tempPath = $_FILES[$row]['tmp_name'];
-                                compressImage($tempPath, 'public/uploads/web_settings/' . $newName, 70);
-                                $updatedData[$row] = $newName;
+                                $result = upload_file(
+                                    $file,
+                                    "public/uploads/web_settings/",
+                                    "error uploading web settings file",
+                                    'web_settings'
+                                );
+
+                                if ($result['error'] == false) {
+                                    $updatedData[$row] = $result['file_name'];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
                             }
                         } else {
                             $updatedData[$row] = isset($data[$row]) ? $data[$row] : "";
@@ -2542,5 +2332,278 @@ class Settings extends Admin
             'rows' => $rows
         ];
         return $this->response->setJSON($bulkData);
+    }
+    public function become_provider_setting_page()
+    {
+        if (!$this->isLoggedIn || !$this->userIsAdmin) {
+            return redirect('admin/login');
+        }
+        $this->builder->select('value');
+        $this->builder->where('variable', 'become_provider_page_settings');
+        $query = $this->builder->get()->getResultArray();
+        if (count($query) == 1) {
+            $settings1 = $query[0]['value'];
+            $settings1 = json_decode($settings1, true);
+
+            $this->data = array_merge($this->data, $settings1);
+        }
+        setPageInfo($this->data, 'Become Provider Settings | Admin Panel', 'become_provider_page_settings');
+        return view('backend/admin/template', $this->data);
+    }
+    public function become_provider_setting_page_update()
+    {
+        try {
+            if (!$this->isLoggedIn || !$this->userIsAdmin) {
+                return redirect('admin/login');
+            }
+            $request = $this->request->getPost();
+            $uploadedFiles = $this->request->getFiles();
+
+            $rules = [];
+            $sections = ['hero_section', 'how_it_work_section', 'category_section', 'subscription_section', 'top_providers_section', 'review_section', 'faq_section',];
+
+            $rules = [];
+
+
+
+            // Hero Section
+            if (isset($request['hero_section_status']) && (($request['hero_section_status'] == "on") || $request['hero_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'hero_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter hero section short headline"]],
+                    'hero_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter hero section title"]],
+                    'hero_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter hero section description"]],
+                ]);
+            }
+
+            // How It Works Section
+            if (isset($request['how_it_work_section_status']) && (($request['how_it_work_section_status'] == "on") || $request['how_it_work_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'how_it_work_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter how it works section short headline"]],
+                    'how_it_work_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter how it works section title"]],
+                    'how_it_work_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter how it works section description"]],
+                ]);
+            }
+
+            // Category Section
+            if (isset($request['category_section_status']) && (($request['category_section_status'] == "on") || $request['category_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'category_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter category section short headline"]],
+                    'category_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter category section title"]],
+                    'category_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter category section description"]],
+                ]);
+            }
+
+            // Subscription Section
+            if (isset($request['subscription_section_status']) && (($request['subscription_section_status'] == "on") || $request['subscription_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'subscription_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter subscription section short headline"]],
+                    'subscription_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter subscription section title"]],
+                    'subscription_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter subscription section description"]],
+                ]);
+            }
+
+            // Top Providers Section
+            if (isset($request['top_providers_section_status']) && (($request['top_providers_section_status'] == "on") || $request['top_providers_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'top_providers_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter top providers section short headline"]],
+                    'top_providers_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter top providers section title"]],
+                    'top_providers_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter top providers section description"]],
+                ]);
+            }
+
+            // Review Section
+            if (isset($request['review_section_status']) && (($request['review_section_status'] == "on") || $request['review_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'review_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter review section short headline"]],
+                    'review_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter review section title"]],
+                    'review_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter review section description"]],
+                ]);
+            }
+
+            // FAQ Section
+            if (isset($request['faq_section_status']) && (($request['faq_section_status'] == "on") || $request['faq_section_status'] == "1")) {
+                $rules = array_merge($rules, [
+                    'faq_section_short_headline' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter faq section short headline"]],
+                    'faq_section_title' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter faq section title"]],
+                    'faq_section_description' => ["rules" => 'required|trim', "errors" => ["required" => "Please enter faq section description"]],
+                ]);
+            }
+
+         
+
+            if (!$this->validation->setRules($rules)->withRequest($this->request)->run()) {
+                $errors = $this->validation->getErrors();
+            }
+
+            // Additional Validation for Steps
+            if (
+                isset($request['how_it_work_section_status']) &&
+                (($request['how_it_work_section_status'] == "on") || $request['how_it_work_section_status'] == "1")
+            ) {
+                foreach ($request['how_it_work_section_steps'] as $index => $step) {
+                    if (empty($step['title']) || empty($step['description'])) {
+                        $errors["how_it_work_section_steps.$index"] = "Please enter how it works section steps.";
+                    }
+                }
+            }
+
+            // Additional Validation for Steps
+            if (
+                isset($request['feature_section_status']) &&
+                (($request['feature_section_status'] == "on") || $request['feature_section_status'] == "1")
+            ) {
+
+                foreach ($request['feature_section_feature'] as $index => $feature) {
+                    if (empty($feature['title']) || empty($feature['description'])) {
+                        $errors["feature_section_feature.$index"] = "Please enter features in feature section.";
+                    }
+                }
+            }
+
+
+
+            // Check if there are errors
+            if (!empty($errors)) {
+                $errorMessages = implode('<br>', array_values($errors)); // Join errors with a line break
+                $this->session->setFlashdata('toastMessage', $errorMessages);
+                $this->session->setFlashdata('toastMessageType', 'error');
+                return redirect()->back()->withInput();
+            }
+
+            // Process each section
+            $settings = [];
+            $disk = fetch_current_file_manager();
+
+            foreach ($sections as $section) {
+                $section_data = [
+                    'status' => ((isset($request["{$section}_status"])) && ($request["{$section}_status"] == "on")) ? 1 : 0,
+                    'short_headline' => $request["{$section}_short_headline"],
+                    'title' => $request["{$section}_title"],
+                    'description' => $request["{$section}_description"]
+                ];
+                if ($section == 'how_it_work_section') {
+                    $section_data['steps'] = json_encode($request['how_it_work_section_steps']);
+                } elseif ($section == 'hero_section') {
+                    $hero_section_images_selector = [];
+                    // Handle existing images first
+                    $existing_images = $request['hero_section_images_existing'] ?? [];
+                    if (!empty($existing_images)) {
+                        foreach ($existing_images as $existing_image) {
+                            $hero_section_images_selector[] = [
+                                'image' => $existing_image['image'],
+                            ];
+                        }
+                    }
+                    // Handle new uploaded images
+                    if (isset($uploadedFiles['hero_section_images'])) {
+                        foreach ($uploadedFiles['hero_section_images'] as $img) {
+                            if ($img->isValid()) {
+                                $result = upload_file($img, "public/uploads/become_provider/", "error creating become_provider", 'become_provider');
+                                if ($result['error'] == false) {
+                                    $hero_section_images_selector[] = [
+                                        'image' => $result['file_name'],
+                                    ];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
+                            }
+                        }
+                    }
+                    $section_data['images'] = $hero_section_images_selector;
+                }
+                $settings[$section] = json_encode($section_data);
+            }
+
+            if (isset($request['feature_section_status']) && (($request['feature_section_status'] == "on") || $request['feature_section_status'] == "1")) {
+                if (isset($request['feature_section_feature']) && $request['feature_section_feature']) {
+                    $features = $request['feature_section_feature'];
+                    $updatedFeatures = [];
+                    $request = \Config\Services::request();
+                    $uploadPath = 'public/uploads/become_provider/';
+                    foreach ($features as $i => $item) {
+                        // Handle new feature entry
+                        if ($item['exist_image'] == 'new') {
+                            $file = $request->getFile("feature_section_feature.{$i}.image");
+                            if ($file && $file->isValid()) {
+                                $result = upload_file($file, $uploadPath, "error creating feature section", 'become_provider');
+                                if ($result['error'] == false) {
+                                    $updatedFeatures[] = [
+                                        'short_headline' => trim($item['short_headline']),
+                                        'title' => trim($item['title']),
+                                        'description' => trim($item['description']),
+                                        'position' => $item['position'],
+                                        'image' => $result['file_name']
+                                    ];
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
+                            } else {
+
+                                // If no file is uploaded for new entry, still add the feature
+                                $updatedFeatures[] = [
+                                    'short_headline' => trim($item['short_headline']),
+                                    'title' => trim($item['title']),
+                                    'description' => trim($item['description']),
+                                    'position' => $item['position'],
+                                    'image' => ''  // or set a default image
+                                ];
+                            }
+                        }
+                        // Handle existing feature entry
+                        else {
+
+
+                            $updatedData = [
+                                'short_headline' => trim($item['short_headline']),
+                                'title' => trim($item['title']),
+                                'description' => trim($item['description']),
+                                'position' => $item['position']
+                            ];
+                            // Check if a new file is being uploaded for existing entry
+                            $file = $request->getFile("feature_section_feature.{$i}.image");
+                            if ($file && $file->isValid()) {
+                                $result = upload_file($file, $uploadPath, "error updating feature section", 'feature_section');
+                                if ($result['error'] == false) {
+                                    $updatedData['image'] = $result['file_name'];
+                                    // Delete old image if exists
+                                    if (!empty($item['exist_image']) && file_exists($uploadPath . $item['exist_image'])) {
+                                        unlink($uploadPath . $item['exist_image']);
+                                    }
+                                } else {
+                                    return ErrorResponse($result['message'], true, [], [], 200, csrf_token(), csrf_hash());
+                                }
+                            } else {
+                                $disk = fetch_current_file_manager();
+
+                                // Keep existing image if no new file uploaded
+                                $updatedData['image'] = $item['exist_image'];
+                            }
+                            $updatedFeatures[] = $updatedData;
+                        }
+                    }
+                    // Prepare final settings array
+                    $feature_section = [
+                        'status' => ($request->getPost("feature_section_status") !== null && $request->getPost("feature_section_status") === "on") ? 1 : 0,
+                        'features' => ($updatedFeatures),
+                    ];
+                    $settings['feature_section'] = json_encode($feature_section);
+                }
+            }
+
+            // Update settings with new data
+            $json_string = json_encode($settings);
+            if ($this->update_setting('become_provider_page_settings', $json_string)) {
+                $_SESSION['toastMessage']  = 'Unable to update the Become Provider Page settings.';
+                $_SESSION['toastMessageType']  = 'error';
+            } else {
+                $_SESSION['toastMessage'] = 'Become Provider Page settings has been successfuly updated.';
+                $_SESSION['toastMessageType']  = 'success';
+            }
+            $this->session->markAsFlashdata('toastMessage');
+            $this->session->markAsFlashdata('toastMessageType');
+            return redirect()->to('admin/settings/become-provider-setting')->withCookies();
+        } catch (\Throwable $th) {
+            throw $th;
+        }
     }
 }

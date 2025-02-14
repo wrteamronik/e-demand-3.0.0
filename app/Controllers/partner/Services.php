@@ -149,7 +149,7 @@ class Services extends Partner
                             $old_icon = "";
                         }
                         $uploadedFiles = $this->request->getFiles('filepond');
-                        
+
                         if (!empty($uploadedFiles)) {
                             $imagefile = $uploadedFiles['image'];
                             $files_selector = [];
@@ -481,7 +481,7 @@ class Services extends Partner
                     $tax_data = fetch_details('taxes', ['id' => $this->request->getVar('edit_tax_id')], ['id', 'title', 'percentage']);
                     $faqs = $this->request->getPost('faqs');
                     if (!empty($faqs)) {
-                        if ($faqs[0][0] == "" && $faqs[0][1] == "") {
+                        if ($faqs[1][0] == "" && $faqs[1][1] == "") {
                             $empty = [];
                             $faqData = ['faqs' => json_encode($empty)];
                         } else {

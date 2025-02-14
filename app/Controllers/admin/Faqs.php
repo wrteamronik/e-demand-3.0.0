@@ -1,6 +1,9 @@
 <?php
+
 namespace App\Controllers\admin;
+
 use App\Models\Faqs_model;
+
 class Faqs extends Admin
 {
     public   $validation, $faqs, $creator_id;
@@ -39,16 +42,40 @@ class Faqs extends Admin
             }
             $this->validation->setRules(
                 [
-                    'question' => [
+                    'english_question' => [
                         "rules" => 'required',
                         "errors" => [
-                            "required" => "Please enter question for FAQ"
+                            "required" => "Please enter question in English for FAQ"
                         ]
                     ],
-                    'answer' => [
+                    'russian_question' => [
                         "rules" => 'required',
                         "errors" => [
-                            "required" => "Please enter answer for FAQ",
+                            "required" => "Please enter question in Russian for FAQ"
+                        ]
+                    ],
+                    'estonian_question' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter question in Estonian for FAQ"
+                        ]
+                    ],
+                    'english_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in English for FAQ",
+                        ]
+                    ],
+                    'russian_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in Russian for FAQ",
+                        ]
+                    ],
+                    'estonian_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in Estonian for FAQ",
                         ]
                     ],
                 ],
@@ -57,10 +84,23 @@ class Faqs extends Admin
                 $errors  = $this->validation->getErrors();
                 return ErrorResponse($errors, true, [], [], 200, csrf_token(), csrf_hash());
             }
-            $question = trim($_POST['question']);
-            $answer = ($_POST['answer']);
-            $data['question'] = $question;
-            $data['answer'] = $answer;
+
+            $english_question = trim($_POST['english_question']);
+            $russian_question = trim($_POST['russian_question']);
+            $estonian_question = trim($_POST['estonian_question']);
+
+            $english_answer = ($_POST['english_answer']);
+            $russian_answer = ($_POST['russian_answer']);
+            $estonian_answer = ($_POST['estonian_answer']);
+
+            $data['english_question'] = $english_question;
+            $data['russian_question'] = $russian_question;
+            $data['estonian_question'] = $estonian_question;
+
+            $data['english_answer'] = $english_answer;
+            $data['russian_answer'] = $russian_answer;
+            $data['estonian_answer'] = $estonian_answer;
+
             if ($this->faqs->save($data)) {
                 return successResponse("Faq added successfully", false, [], [], 200, csrf_token(), csrf_hash());
             } else {
@@ -112,9 +152,13 @@ class Faqs extends Admin
                 $operations .= '<a class="dropdown-item remove_faqs" data-id="' . $row['id'] . '" onclick="faqs_id(this)" data-toggle="modal" data-target="#delete_modal" title = "Delete the Faqs"> <i class="fa fa-trash text-danger mr-1"></i> Delete</a>';
                 $operations .= '</div></div>';
                 $tempRow['id'] = $row['id'];
-                $tempRow['answer'] = $row['answer'];
+                $tempRow['english_answer'] = $row['english_answer'];
+                $tempRow['russian_answer'] = $row['russian_answer'];
+                $tempRow['estonian_answer'] = $row['estonian_answer'];
                 $tempRow['created_at'] = format_date($row['created_at'], 'd-m-Y');
-                $tempRow['question'] = $row['question'];
+                $tempRow['english_question'] = $row['english_question'];
+                $tempRow['russian_question'] = $row['russian_question'];
+                $tempRow['estonian_question'] = $row['estonian_question'];
                 $tempRow['operations'] = $operations;
                 $rows[] = $tempRow;
             }
@@ -165,16 +209,40 @@ class Faqs extends Admin
             }
             $this->validation->setRules(
                 [
-                    'question' => [
+                    'english_question' => [
                         "rules" => 'required',
                         "errors" => [
-                            "required" => "Please enter question for FAQ"
+                            "required" => "Please enter question in English for FAQ"
                         ]
                     ],
-                    'answer' => [
+                    'russian_question' => [
                         "rules" => 'required',
                         "errors" => [
-                            "required" => "Please enter answer for FAQ",
+                            "required" => "Please enter question in Russian for FAQ"
+                        ]
+                    ],
+                    'estonian_question' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter question in Estonian for FAQ"
+                        ]
+                    ],
+                    'english_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in English for FAQ",
+                        ]
+                    ],
+                    'russian_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in Russian for FAQ",
+                        ]
+                    ],
+                    'estonian_answer' => [
+                        "rules" => 'required',
+                        "errors" => [
+                            "required" => "Please enter answer in Estonian for FAQ",
                         ]
                     ],
                 ],
@@ -186,11 +254,27 @@ class Faqs extends Admin
             $builder = $db->table('faqs');
             if ($this->isLoggedIn && $this->userIsAdmin) {
                 $id = $this->request->getPost('id');
-                $question = $this->request->getPost('question');
-                $answer = $this->request->getPost('answer');
+
+                $english_question = $this->request->getPost('english_question');
+                $russian_question = $this->request->getPost('russian_question');
+                $estonian_question = $this->request->getPost('estonian_question');
+
+                $english_answer = $this->request->getPost('english_answer');
+                $russian_answer = $this->request->getPost('russian_answer');
+                $estonian_answer = $this->request->getPost('estonian_answer');
+
+
                 $old_data = fetch_details('faqs', ['id' => $id]);
-                $data['question'] = $question;
-                $data['answer'] = $answer;
+
+
+                $data['english_question'] = $english_question;
+                $data['russian_question'] = $russian_question;
+                $data['estonian_question'] = $estonian_question;
+
+                $data['english_answer'] = $english_answer;
+                $data['russian_answer'] = $russian_answer;
+                $data['estonian_answer'] = $estonian_answer;
+
                 if ($builder->update($data, ['id' => $id])) {
                     return successResponse("FAQ updated successfully", false, [], [], 200, csrf_token(), csrf_hash());
                 } else {

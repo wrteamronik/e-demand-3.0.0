@@ -21,16 +21,40 @@
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="question" class="required"><?= labels('question', "Quetion") ?></label>
-                                    <input id="question" class="form-control" type="text" name="question" placeholder="Enter the Question here">
+                                    <label for="english_question" class="required"><?= labels('english_question', "Question in English") ?></label>
+                                    <input id="english_question" class="form-control" type="text" name="english_question" placeholder="Enter the Question in English here">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="russian_question" class="required"><?= labels('russian_question', "Question in Russian") ?></label>
+                                    <input id="russian_question" class="form-control" type="text" name="russian_question" placeholder="Enter the Question in Russian here">
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="estonian_question" class="required"><?= labels('estonian_question', "Question in Estonian") ?></label>
+                                    <input id="estonian_question" class="form-control" type="text" name="estonian_question" placeholder="Enter the Question in Estonian here">
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-12">
                                 <div class="form-group">
-                                    <label for="answer" class="required"><?= labels('answer', "Answer") ?></label>
-                                    <textarea id="answer" style="min-height:60px" class="form-control" name="answer" placeholder="Enter the Answer here"></textarea>
+                                    <label for="english_answer" class="required"><?= labels('english_answer', "Answer in English") ?></label>
+                                    <textarea id="english_answer" style="min-height:60px" class="form-control" name="english_answer" placeholder="Enter the Answer in English here"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="russian_answer" class="required"><?= labels('russian_answer', "Answer in Russian") ?></label>
+                                    <textarea id="russian_answer" style="min-height:60px" class="form-control" name="russian_answer" placeholder="Enter the Answer in Russian here"></textarea>
+                                </div>
+                            </div>
+                            <div class="col-md-12">
+                                <div class="form-group">
+                                    <label for="estonian_answer" class="required"><?= labels('estonian_answer', "Answer in Estonian") ?></label>
+                                    <textarea id="estonian_answer" style="min-height:60px" class="form-control" name="estonian_answer" placeholder="Enter the Answer in Estonian here"></textarea>
                                 </div>
                             </div>
                         </div>
@@ -75,7 +99,7 @@
                                         </div>
                                     </div>
                                 </div>
-                                <table class="table " data-fixed-columns="true"  id="user_list" data-detail-formatter="user_formater"
+                                <table class="table " data-fixed-columns="true" id="user_list" data-detail-formatter="user_formater"
                                     data-auto-refresh="true" data-toggle="table"
                                     data-url="<?= base_url("admin/faqs/list") ?>" data-side-pagination="server" data-pagination="true" data-page-list="[5, 10, 25, 50, 100, 200, All]"
                                     data-search="false" data-show-columns="false" data-show-columns-search="true" data-show-refresh="false" data-sort-name="id" data-sort-order="DESC"
@@ -83,8 +107,14 @@
                                     <thead>
                                         <tr>
                                             <th data-field="id" class="text-center" data-sortable="true"><?= labels('id', 'ID') ?></th>
-                                            <th data-field="question" class="text-center" data-sortable="true"><?= labels('question', 'Question') ?></th>
-                                            <th data-field="answer" class="text-center" data-sortable="true"><?= labels('answer', 'Answer') ?></th>
+                                            <th data-field="english_question" class="text-center" data-sortable="true"><?= labels('english_question', 'Question in English') ?></th>
+                                            <th data-field="russian_question" class="text-center" data-sortable="true"><?= labels('russian_question', 'Question in Russian') ?></th>
+                                            <th data-field="estonian_question" class="text-center" data-sortable="true"><?= labels('estonian_question', 'Question in Estonian') ?></th>
+
+                                            <th data-field="english_answer" class="text-center" data-sortable="true"><?= labels('english_answer', 'Answer in English') ?></th>
+                                            <th data-field="russian_answer" class="text-center" data-sortable="true"><?= labels('russian_answer', 'Answer in Russian') ?></th>
+                                            <th data-field="estonian_answer" class="text-center" data-sortable="true"><?= labels('estonian_answer', 'Answer in Estonian') ?></th>
+
                                             <th data-field="created_at" class="text-center" data-visible="false" data-sortable="true"><?= labels('created_at', 'Created At') ?></th>
                                             <th data-field="operations" class="text-center" data-events="faqs_events"><?= labels('operations', 'Operations') ?></th>
                                         </tr>

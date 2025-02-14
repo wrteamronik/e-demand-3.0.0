@@ -1,0 +1,22 @@
+ERROR - 2025-02-14 07:56:04 --> CodeIgniter\Database\Exceptions\DataException: There is no data to insert. in /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php:718
+Stack trace:
+#0 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php(718): CodeIgniter\Database\Exceptions\DataException::forEmptyDataset('insert')
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Model.php(625): CodeIgniter\BaseModel->insert(Array, false)
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php(658): CodeIgniter\Model->insert(Array, false)
+#3 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Faqs.php(104): CodeIgniter\BaseModel->save(Array)
+#4 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Faqs->add_faqs()
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Faqs))
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#8 {main}- at 2025-02-14 07:56:04--> app/Controllers/admin/Faqs.php - add_faqs()
+ERROR - 2025-02-14 08:00:24 --> CodeIgniter\Database\Exceptions\DataException: There is no data to insert. in /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php:718
+Stack trace:
+#0 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php(718): CodeIgniter\Database\Exceptions\DataException::forEmptyDataset('insert')
+#1 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/Model.php(625): CodeIgniter\BaseModel->insert(Array, false)
+#2 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/BaseModel.php(658): CodeIgniter\Model->insert(Array, false)
+#3 /opt/lampp/htdocs/e-demand/app/Controllers/admin/Faqs.php(106): CodeIgniter\BaseModel->save(Array)
+#4 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(834): App\Controllers\admin\Faqs->add_faqs()
+#5 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(421): CodeIgniter\CodeIgniter->runController(Object(App\Controllers\admin\Faqs))
+#6 /opt/lampp/htdocs/e-demand/vendor/codeigniter4/framework/system/CodeIgniter.php(328): CodeIgniter\CodeIgniter->handleRequest(NULL, Object(Config\Cache), false)
+#7 /opt/lampp/htdocs/e-demand/index.php(55): CodeIgniter\CodeIgniter->run()
+#8 {main}- at 2025-02-14 08:00:24--> app/Controllers/admin/Faqs.php - add_faqs()

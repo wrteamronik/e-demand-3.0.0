@@ -6860,4 +6860,14 @@ if (!function_exists('image_url')) {
         // If no file found, return default logo
         return $default_logo;
     }
+
+    function fetch_current_file_manager()
+    {
+        $setting = get_settings('storage_disk');
+
+        if (empty($setting) || !isset($setting)) {
+            $setting = 'local_server';
+        }
+        return $setting;
+    }
 }
